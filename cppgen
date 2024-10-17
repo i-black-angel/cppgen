@@ -1,0 +1,16 @@
+#!/usr/bin/python3
+
+import shutil
+
+# Define the path to the source file
+src_file = 'template/main.cpp.tmpl'
+
+# Define the path to the destination file
+dst_file = 'main.cpp'
+
+# Try to copy the file from the source to the destination
+try:
+    shutil.copy(src_file, dst_file)
+    print(f"Generated {dst_file}")
+except Exception as e:
+    print(f"An unexpected error occurred: {e}")
