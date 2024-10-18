@@ -1,16 +1,106 @@
 #!/usr/bin/python3
 
-import shutil
+# MIT License
 
-# Define the path to the source file
-src_file = 'template/main.cpp.tmpl'
+# Copyright (c) 2024 iBlackAngel <iblackangel@163.com>
 
-# Define the path to the destination file
-dst_file = 'main.cpp'
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
 
-# Try to copy the file from the source to the destination
-try:
-    shutil.copy(src_file, dst_file)
-    print(f"Generated {dst_file}")
-except Exception as e:
-    print(f"An unexpected error occurred: {e}")
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+import argparse
+import re
+import os
+import sys
+from pathlib import Path
+
+def replace_multiple_in_file(file_path, replacements, output_file_path=None):
+    try:
+        # Read the contents of the file
+        with open(file_path, 'r', encoding='utf-8') as file:
+            file_contents = file.read()
+
+        # Apply each replacement in sequence
+        for old, new in replacements:
+            file_contents = file_contents.replace(old, new)
+
+        # Determine the output file path
+        if output_file_path is None:
+            output_file_path = file_path
+
+        # Write the modified contents to the output file
+        with open(output_file_path, 'w', encoding='utf-8') as file:
+            file.write(file_contents)
+
+        print(f"saved to '{output_file_path}'")
+
+    except FileNotFoundError:
+        print(f"error: The file {file_path} was not found.")
+    except Exception as e:
+        print(f"an error occurred: {e}")
+
+
+def is_valid_name(name):
+    # Define the regular expression pattern for validation  
+    pattern = r'^[A-Za-z][A-Za-z0-9_.-]*$'
+    match = re.match(pattern, name)
+    return match is not None
+
+def generate_source_code(project_path):
+    project_name = Path(project_path).name
+
+    if (not is_valid_name(project_name)):
+        print(f"failed: '{project_name}' is invalid project name")
+        sys.exit(1)
+    
+    try:
+        os.makedirs(project_path)
+        print(f"project '{project_path}' created")
+
+        source_path = project_path + '/src'
+        os.makedirs(source_path)
+        print(f"'{source_path}' created")
+    except OSError as e:
+        print(f"failed: {e}")
+        sys.exit(1)
+
+    templates = [
+        ('template/CMakeLists.txt.tmpl', project_path + '/CMakeLists.txt'),
+        ('template/main.cpp.tmpl', source_path + '/main.cpp')
+    ]
+    replacements = [
+        ('${project}', project_name)
+    ]
+    for input_template, output_template in templates:
+        replace_multiple_in_file(input_template, replacements, output_template)
+
+
+def main():
+    # Create an ArgumentParser object
+    parser = argparse.ArgumentParser(description="cpp source code generator")
+
+    # Add positional arguments
+    parser.add_argument('project_path', type=str, help='to be generated project path')
+
+    # Parse the command-line arguments
+    args = parser.parse_args()
+
+    generate_source_code(args.project_path)
+
+
+if __name__ == "__main__":
+    main()
