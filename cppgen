@@ -80,6 +80,7 @@ def generate_source_code(project_path):
 
     templates = [
         ('template/CMakeLists.txt.tmpl', project_path + '/CMakeLists.txt'),
+        ('template/README.md.tmpl', project_path + '/README.md'),
         ('template/main.cpp.tmpl', source_path + '/main.cpp')
     ]
     replacements = [
