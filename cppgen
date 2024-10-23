@@ -68,11 +68,11 @@ def generate_source_code(project_path):
         sys.exit(1)
     
     try:
-        os.makedirs(project_path)
+        os.mkdir(project_path)
         print(f"project '{project_path}' created")
 
         source_path = project_path + '/src'
-        os.makedirs(source_path)
+        os.mkdir(source_path)
         print(f"'{source_path}' created")
     except OSError as e:
         print(f"failed: {e}")
