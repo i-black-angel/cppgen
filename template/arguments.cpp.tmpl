@@ -1,0 +1,97 @@
+// MIT License
+
+// Copyright (c) 2024 iBlackAngel <iblackangel@163.com>
+
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+#include "arguments.h"
+
+#include <stdio.h>      // included for `printf`
+#include <getopt.h>     // included for `getopt_long`
+#include <string.h>     // included for `basename`
+#include <stdlib.h>     // included for `EXIT_SUCCESS|EXIT_FAILURE`
+
+// refer to: https://blog.csdn.net/bluebird_shao/article/details/128067350
+
+namespace ${project_ns} {
+
+#define VERSION "1.0.0"
+
+// define option table
+static const struct option longopts[] = {
+    {"help", no_argument, NULL, 'h'},
+    {"version", no_argument, NULL, 'V'},
+    // TODO::Add command-line arguments which need to be handled
+    {"config", required_argument, NULL, 'c'},
+    // End with following line
+    {NULL, 0, NULL, 0}};
+
+// Print help info.
+static void print_help(const char *progname) {
+    printf("Usage: %s [OPTION]...\n", progname);
+    printf("Options:\n");
+    printf("  -h, --help              display this help\n");
+    printf("  -V, --version           display version information\n");
+    // TODO::Add help comments for the command-line arguments
+    printf("  -c, --config=CONFIG     use CONFIG as the config path\n");
+}
+
+static void print_version() {
+    printf("%s\n", VERSION);
+}
+
+arguments parse_arguments(int argc, char *argv[]) {
+    arguments args{};
+    const char *program_name = basename(argv[0]);
+    int optc = 0;
+    int lose = 0;
+
+    while ((optc = getopt_long(argc, argv, "hVc:", longopts, NULL)) != -1)
+        switch (optc) {
+            /* One goal here is having --help and --version exit immediately,
+               per GNU coding standards.  */
+            case 'h':
+                print_help(program_name);
+                exit(EXIT_SUCCESS);
+                break;
+            case 'V':
+                print_version();
+                exit(EXIT_SUCCESS);
+                break;
+            case 'c':
+                args.config_path = optarg;
+                break;
+            default:
+                lose = 1;
+                break;
+        }
+
+    if (lose || optind < argc) {
+        /* Print error message and exit.  */
+        if (optind < argc)
+            fprintf(stderr, "%s: extra operand: %s\n", program_name,
+                    argv[optind]);
+        fprintf(stderr, "Try `%s --help' for more information.\n",
+                program_name);
+        exit(EXIT_FAILURE);
+    }
+
+    return args;
+}
+
+} // ${project_ns}

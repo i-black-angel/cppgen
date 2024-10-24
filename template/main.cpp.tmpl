@@ -19,19 +19,20 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
-#include <signal.h>     // included for 'signal()'
-#include <string.h>     // included for 'strsignal()'
+#include <signal.h>     // included for 'signal'
+#include <string.h>     // included for 'strsignal'
 #include <stdlib.h>     // included for 'EXIT_SUCCESS'
+#include <stdio.h>      // included for 'printf'
 #include <atomic>       // included for 'std::atomic<>'
-#include <iostream>     // included for 'std::cout'
 #include <thread>       // included for 'std::this_thread'
+
+#include "arguments.h"
 
 std::atomic<bool> exit_request{false};
 
 // Handle signals
 void sighandler(int signo) {
-    std::cout << "Caught signal number " << std::to_string(signo) << " ("
-            << strsignal(signo) << ")" << std::endl;
+    printf("Caught signal number %d (%s)\n", signo, strsignal(signo));
     exit_request = true;
 }
 
@@ -47,7 +48,12 @@ void setup_signal_handler() {
 int main(int argc, char *argv[]) {
     setup_signal_handler();
 
-    std::cout << "Demonstrate using template for ${project}" << std::endl;
+    ${project_ns}::arguments args{};
+    args = ${project_ns}::parse_arguments(argc, argv);
+
+    printf("Demonstrate using template for ${project}\n");
+    if (!args.config_path.empty()) 
+        printf("Config path: %s\n", args.config_path.c_str());
 
     // Simulate tasks that run for a long time
     while (!exit_request) {

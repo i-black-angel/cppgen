@@ -60,6 +60,13 @@ def is_valid_name(name):
     match = re.match(pattern, name)
     return match is not None
 
+def convert_to_underline(str):
+    # Convert '-' and '.' to '_'
+    val = str
+    val = val.replace('-', '_')
+    val = val.replace('.', '_')
+    return val
+
 def generate_source_code(project_path):
     project_name = Path(project_path).name
 
@@ -81,10 +88,14 @@ def generate_source_code(project_path):
     templates = [
         ('template/CMakeLists.txt.tmpl', project_path + '/CMakeLists.txt'),
         ('template/README.md.tmpl', project_path + '/README.md'),
+        ('template/arguments.h.tmpl', source_path + '/arguments.h'),
+        ('template/arguments.cpp.tmpl', source_path + '/arguments.cpp'),
         ('template/main.cpp.tmpl', source_path + '/main.cpp')
     ]
     replacements = [
-        ('${project}', project_name)
+        ('${project}', project_name),
+        ('${project_ns}', convert_to_underline(project_name.lower())),
+        ('${PROJECT}', convert_to_underline(project_name.upper()))
     ]
     for input_template, output_template in templates:
         replace_multiple_in_file(input_template, replacements, output_template)
